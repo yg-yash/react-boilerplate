@@ -49,15 +49,6 @@ export default function ButtonAppBar() {
         <Toolbar>
           {isLoggedIn ? (
             <>
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="open drawer"
-                onClick={handleDrawerOpen}
-                className={classes.menuButton}
-              >
-                <MenuIcon />
-              </IconButton>
               <Typography
                 component="h1"
                 variant="h6"
