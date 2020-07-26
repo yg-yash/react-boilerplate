@@ -8,8 +8,6 @@ import AddIcon from '@material-ui/icons/Add';
 import AddAPhotoIcon from '@material-ui/icons/AddAPhoto';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import TextField from '@material-ui/core/TextField';
-import Card from '@material-ui/core/Card';
-import SaveIcon from '@material-ui/icons/Save';
 import Drawer from '../UI/Drawer';
 import Fab from '@material-ui/core/Fab';
 import Dialog from '@material-ui/core/Dialog';
@@ -51,18 +49,6 @@ const styles = (theme) => ({
   textField: {
     margin: '10px auto 10px auto',
   },
-  form: {
-    // width: '60%',
-    // border: '2px solid #000000',
-    // padding: '10px',
-    // borderRadius: '10px',
-  },
-  row: {
-    // display: 'flex',
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
-    // alignItems: 'center',
-  },
   formCard: {
     padding: '10px',
     width: '60%',
@@ -77,9 +63,27 @@ const styles = (theme) => ({
     height: '200px',
     margin: '20px 0 20px 0',
   },
+  timeSpend: {
+    fontSize: '12px',
+    lineHeight: '14px',
+    fontFamily: theme.typography.fontFamily,
+  },
+  levelName: {
+    fontSize: '18px',
+    lineHeight: '21px',
+    fontFamily: theme.typography.fontFamily,
+  },
+  docName: {
+    textAlign: 'center',
+    fontSize: '12px',
+    lineHeight: '14px',
+    fontFamily: theme.typography.fontFamily,
+  },
 });
 
 class AddCourse extends Component {
+  fileUrl: '';
+  imageUrl: '';
   constructor(props) {
     super(props);
     this.state = {
@@ -87,34 +91,21 @@ class AddCourse extends Component {
       chapterNumber: '',
       courseDetails: '',
       timeToBeSpend: '',
+      chapterDescription: '',
       image: null,
       doc: null,
       showLevelDialog: false,
       showForm: false,
       documentArray: [],
       levels: [],
+      currentLevelName: null,
+      currentLevelId: null,
     };
   }
-  //data structure
-  // {
-  //       id: null,
-  //       levelName: '',
-  //       startingChapter: '',
-  //       endChapter: '',
-  //       chapters: [
-  //         {
-  //           chapterNumber: '',
-  //           chapterDescription: '',
-  //           timeRequired: '',
-  //           coverImage: '',
-  //           courseDetails: '',
-  //         },
-  //       ],
-  //     },
 
   handleImageChange = (event) => {
-    const fileUrl = URL.createObjectURL(event.target.files[0]);
-    this.setState({ image: fileUrl });
+    this.imageUrl = URL.createObjectURL(event.target.files[0]);
+    this.setState({ image: event.target.files[0] });
   };
 
   handleEditPicture = () => {
@@ -123,180 +114,46 @@ class AddCourse extends Component {
   };
 
   handleDocumentChange = (event) => {
-    const fileUrl = URL.createObjectURL(event.target.files[0]);
+    this.fileUrl = URL.createObjectURL(event.target.files[0]);
 
-    this.setState({ doc: fileUrl });
+    this.setState({ doc: event.target.files[0] });
   };
 
   handleDocumentUpload = () => {
     const fileInput = document.getElementById('document');
     fileInput.click();
   };
-  onFormSubmit = (e, levelName, levelId) => {
-    e.preventDefault();
-
+  onFormSubmit = () => {
     const newChapter = {
       chapterNumber: this.state.chapterNumber,
       courseDetails: this.state.courseDetails,
       timeToBeSpend: this.state.timeToBeSpend,
+      chapterDescription: this.state.chapterDescription,
+      coverImage: this.state.image,
     };
-    //problem here
-    // this.setState((prevState) => ({
-    //   levels: prevState.levels.find((level) => {
-    //     if (level.levelName === levelName && level.id === levelId) {
-    //       // level.chapters.push(newChapter);
-    //       console.log(level);
-    //     }
-    //     return level;
-    //   }),
-    // }));
+
+    //problem
+    //if wee add a chapter the same chapter gets Add twice
+    this.setState((prevState) => {
+      const levels = [...prevState.levels];
+      levels.find((level) => {
+        if (
+          level.levelName === this.state.currentLevelName &&
+          level.id === this.state.currentLevelId
+        ) {
+          if (level.chapters === undefined) {
+            level.chapters = [];
+          }
+
+          level.chapters.push(newChapter);
+        }
+      });
+    });
   };
 
   onInputChangeHandler = (event) =>
     this.setState({ [event.target.name]: event.target.value });
 
-  renderForm = (levelName, levelId) => {
-    const { classes } = this.props;
-    return (
-      <Grid
-        container
-        justify="center"
-        alignItems="center"
-        className={classes.formContainer}
-      >
-        <Card className={classes.formCard} elevation={5}>
-          <form
-            className={classes.form}
-            noValidate
-            onSubmit={(event) => this.onFormSubmit(event, levelName, levelId)}
-          >
-            <Grid
-              container
-              justify="space-between"
-              spacing={2}
-              alignItems="center"
-            >
-              <Grid item md={6} sm={12}>
-                <TextField
-                  variant="standard"
-                  margin="normal"
-                  required
-                  label="Chapter Number"
-                  id="chapterNumber"
-                  type="text"
-                  name="chapterNumber"
-                  autoFocus
-                  fullWidth
-                  className={classes.textField}
-                  value={this.state.chapterName}
-                  onChange={this.onInputChangeHandler}
-                />
-              </Grid>
-              <Grid item md={6} sm={12}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  className={classes.button}
-                  startIcon={<AddAPhotoIcon />}
-                  onClick={this.handleEditPicture}
-                >
-                  Add Chapter Image
-                </Button>
-                <input
-                  type="file"
-                  id="imageInput"
-                  onChange={this.handleImageChange}
-                  hidden="hidden"
-                  multiple
-                  accept="image/*"
-                />
-              </Grid>
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                variant="standard"
-                margin="normal"
-                required
-                label="Add Course Details"
-                id="courseDetails"
-                type="textfield"
-                multiline
-                rows={4}
-                name="courseDetails"
-                fullWidth
-                className={classes.textField}
-                value={this.state.courseDetails}
-                onChange={this.onInputChangeHandler}
-              />
-            </Grid>
-            <Grid
-              container
-              justify="space-between"
-              spacing={2}
-              alignItems="center"
-            >
-              <Grid item sm={12} md={6}>
-                <TextField
-                  variant="standard"
-                  margin="normal"
-                  required
-                  label="Time To Be Spend"
-                  id="timeToBeSpend"
-                  type="text"
-                  name="timeToBeSpend"
-                  fullWidth
-                  className={classes.textField}
-                  value={this.state.timeToBeSpend}
-                  onChange={this.onInputChangeHandler}
-                />
-              </Grid>
-              <Grid item sm={12} md={6}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  className={classes.button}
-                  startIcon={<NoteAddIcon />}
-                  onClick={this.handleDocumentUpload}
-                >
-                  Add Document
-                </Button>
-                <input
-                  type="file"
-                  id="document"
-                  onChange={this.handleDocumentChange}
-                  hidden="hidden"
-                  accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                />
-              </Grid>
-            </Grid>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-              className={classes.submit}
-            >
-              Save
-            </Button>
-          </form>
-
-          {this.state.doc && (
-            <div className={classes.docViewer}>
-              <FileViewer
-                fileType={type}
-                filePath={this.state.doc}
-                onError={this.onError}
-              />
-            </div>
-          )}
-        </Card>
-      </Grid>
-    );
-  };
   render() {
     const { classes } = this.props;
     return (
@@ -362,37 +219,222 @@ class AddCourse extends Component {
               <div style={{ width: '100%' }}>
                 {this.state.levels.map((level) => {
                   return (
-                    <Accordion>
+                    <Accordion key={level}>
                       <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel1a-content"
                         id="panel1a-header"
                       >
-                        {level.chapters &&
-                          level.chapters.map((chapter) => (
-                            <Accordion>
-                              <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                              >
-                                <Typography className={classes.heading}>
-                                  {level.levelName}
-                                </Typography>
-                              </AccordionSummary>
-                            </Accordion>
-                          ))}
-                        <Typography className={classes.heading}>
-                          {level.levelName}
+                        <Typography className={classes.levelName} variant="h6">
+                          Level: {level.levelName}
                         </Typography>
                       </AccordionSummary>
+
+                      {level.chapters &&
+                        level.chapters.map((chapter) => (
+                          <AccordionDetails>
+                            <Accordion style={{ width: '100%' }}>
+                              <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel2a-content"
+                                id="panel2a-header"
+                              >
+                                <Typography
+                                  className={classes.heading}
+                                  variant="subtitle1"
+                                >
+                                  {chapter.chapterNumber}{' '}
+                                  {chapter.chapterDescription}
+                                </Typography>
+                              </AccordionSummary>
+                              <AccordionDetails>
+                                <Typography>
+                                  Course Details:
+                                  <br />
+                                  {chapter.courseDetails}
+                                </Typography>
+                                <br />
+                              </AccordionDetails>
+                              <AccordionDetails>
+                                <Typography
+                                  variant="subtitle2"
+                                  className={classes.timeSpend}
+                                >
+                                  Time Required: <br />
+                                  {chapter.timeToBeSpend} min
+                                </Typography>
+                              </AccordionDetails>
+                            </Accordion>
+                          </AccordionDetails>
+                        ))}
+
                       <AccordionDetails>
-                        {this.renderForm(level.levelName, level.id)}
+                        <Fab
+                          variant="extended"
+                          color="primary"
+                          onClick={() =>
+                            this.setState({
+                              showForm: true,
+                              currentLevelName: level.levelName,
+                              currentLevelId: level.id,
+                            })
+                          }
+                        >
+                          <AddIcon />
+                          Add Chapter
+                        </Fab>
                       </AccordionDetails>
                     </Accordion>
                   );
                 })}
               </div>
+              <Dialog
+                open={this.state.showForm}
+                onClose={() => this.setState({ showLevelDialog: false })}
+                aria-labelledby="form-dialog-title"
+              >
+                <DialogTitle id="form-dialog-title">Add Chapter</DialogTitle>
+                <DialogContent>
+                  <input
+                    type="file"
+                    id="imageInput"
+                    onChange={this.handleImageChange}
+                    hidden="hidden"
+                    multiple
+                    accept="image/*"
+                  />
+                  <TextField
+                    variant="standard"
+                    margin="normal"
+                    required
+                    label="Chapter Number"
+                    id="chapterNumber"
+                    type="text"
+                    name="chapterNumber"
+                    autoFocus
+                    fullWidth
+                    className={classes.textField}
+                    value={this.state.chapterName}
+                    onChange={this.onInputChangeHandler}
+                  />
+                  <TextField
+                    variant="standard"
+                    margin="normal"
+                    required
+                    label="Chapter Description"
+                    id="chapterDescription"
+                    type="text"
+                    name="chapterDescription"
+                    autoFocus
+                    fullWidth
+                    className={classes.textField}
+                    value={this.state.chapterDescription}
+                    onChange={this.onInputChangeHandler}
+                  />
+                  <TextField
+                    variant="standard"
+                    margin="normal"
+                    required
+                    label="Add Course Details"
+                    id="courseDetails"
+                    type="textfield"
+                    multiline
+                    rows={4}
+                    name="courseDetails"
+                    fullWidth
+                    className={classes.textField}
+                    value={this.state.courseDetails}
+                    onChange={this.onInputChangeHandler}
+                  />
+
+                  <TextField
+                    variant="standard"
+                    margin="normal"
+                    required
+                    label="Time To Be Spend"
+                    id="timeToBeSpend"
+                    type="text"
+                    name="timeToBeSpend"
+                    fullWidth
+                    className={classes.textField}
+                    value={this.state.timeToBeSpend}
+                    onChange={this.onInputChangeHandler}
+                  />
+                  <Grid
+                    container
+                    justify="space-between"
+                    direction="row"
+                    spacing={1}
+                  >
+                    <Grid item xs={12} md={5}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        className={classes.button}
+                        startIcon={<AddAPhotoIcon />}
+                        onClick={this.handleEditPicture}
+                      >
+                        Add Chapter Image
+                      </Button>
+                      {this.state.image && (
+                        <p className={classes.docName}>
+                          {this.state.image.name}
+                        </p>
+                      )}
+                    </Grid>
+                    <Grid item xs={12} md={5}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        className={classes.button}
+                        startIcon={<NoteAddIcon />}
+                        onClick={this.handleDocumentUpload}
+                      >
+                        Add Document
+                      </Button>
+                      {this.state.doc && (
+                        <p className={classes.docName}>{this.state.doc.name}</p>
+                      )}
+                    </Grid>
+                  </Grid>
+                  <input
+                    type="file"
+                    id="document"
+                    onChange={this.handleDocumentChange}
+                    hidden="hidden"
+                    accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  />
+
+                  {this.state.doc && (
+                    <div className={classes.docViewer}>
+                      <FileViewer
+                        fileType={type}
+                        filePath={this.fileUrl}
+                        onError={this.onError}
+                      />
+                    </div>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    onClick={() => this.setState({ showForm: false })}
+                    color="secondary"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      this.onFormSubmit();
+                      this.setState({ showForm: false });
+                    }}
+                    color="primary"
+                  >
+                    Add
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Grid>
           </Container>
         </main>
