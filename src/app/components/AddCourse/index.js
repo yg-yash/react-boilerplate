@@ -86,10 +86,16 @@ const styles = (theme) => ({
     lineHeight: '14px',
     fontFamily: theme.typography.fontFamily,
   },
+  topRow: {
+    width: '50%',
+    marginLeft: '25%',
+    marginBottom: '10px',
+  },
 });
 
 class AddCourse extends Component {
   imageUrl: '';
+
   constructor(props) {
     super(props);
     this.state = {
@@ -104,8 +110,14 @@ class AddCourse extends Component {
       showForm: false,
       documentArray: [],
       levels: [],
+      data: [],
       currentLevelName: null,
       currentLevelId: null,
+      startingChapter: '',
+      endChapter: '',
+      mainCourseDescription: '',
+      mainTotalChapters: '',
+      sequence: 0,
     };
   }
 
@@ -172,7 +184,17 @@ class AddCourse extends Component {
   onInputChangeHandler = (event) =>
     this.setState({ [event.target.name]: event.target.value });
 
-  onDataSubmit = () => console.log(this.state.levels);
+  onDataSubmit = () => {
+    this.setState({
+      data: [
+        {
+          sequence: this.state.sequence,
+          level: this.state.levels,
+        },
+      ],
+    });
+    console.log(this.state.data);
+  };
 
   render() {
     const { classes } = this.props;
@@ -184,6 +206,45 @@ class AddCourse extends Component {
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={3}>
+              <Grid
+                spacing={4}
+                container
+                justify="space-between"
+                direction="row"
+                alignItems="center"
+                className={classes.topRow}
+              >
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="dense"
+                    id="mainCourseDescription"
+                    label="Course Description"
+                    type="text"
+                    name="mainCourseDescription"
+                    fullWidth
+                    autoFocus
+                    value={this.state.mainCourseDescription}
+                    onChange={(e) =>
+                      this.setState({ mainCourseDescription: e.target.value })
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    margin="dense"
+                    id="totalChapters"
+                    label="Total Chapters"
+                    type="text"
+                    name="totalChapters"
+                    fullWidth
+                    value={this.state.mainTotalChapters}
+                    onChange={(e) =>
+                      this.setState({ mainTotalChapters: e.target.value })
+                    }
+                  />
+                </Grid>
+              </Grid>
+
               <Fab
                 variant="extended"
                 color="secondary"
@@ -210,18 +271,42 @@ class AddCourse extends Component {
                 onClose={() => this.setState({ showLevelDialog: false })}
                 aria-labelledby="form-dialog-title"
               >
-                <DialogTitle id="form-dialog-title">Add Level Name</DialogTitle>
+                <DialogTitle id="form-dialog-title">Add Level</DialogTitle>
                 <DialogContent>
                   <TextField
                     autoFocus
                     margin="dense"
                     id="name"
                     label="Level Name"
-                    type="email"
+                    type="type"
                     fullWidth
                     value={this.state.levelName}
                     onChange={(e) =>
                       this.setState({ levelName: e.target.value })
+                    }
+                  />
+                  <TextField
+                    margin="dense"
+                    id="startingChapter"
+                    label="Starting Chapter"
+                    type="text"
+                    name="startingChapter"
+                    fullWidth
+                    value={this.state.startingChapter}
+                    onChange={(e) =>
+                      this.setState({ startingChapter: e.target.value })
+                    }
+                  />
+                  <TextField
+                    margin="dense"
+                    id="endChapter"
+                    label="End Chapter"
+                    type="text"
+                    name="endChapter"
+                    fullWidth
+                    value={this.state.endChapter}
+                    onChange={(e) =>
+                      this.setState({ endChapter: e.target.value })
                     }
                   />
                 </DialogContent>
@@ -237,7 +322,12 @@ class AddCourse extends Component {
                       this.setState((prevState) => ({
                         levels: [
                           ...prevState.levels,
-                          { levelName: this.state.levelName, id: 0 },
+                          {
+                            levelName: this.state.levelName,
+                            id: 0,
+                            endChapter: this.state.endChapter,
+                            startingChapter: this.state.startingChapter,
+                          },
                         ],
                       }));
                       this.setState({ showLevelDialog: false });
