@@ -14,7 +14,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import FileViewer from 'react-file-viewer';
+import SaveIcon from '@material-ui/icons/Save';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
@@ -59,9 +59,16 @@ const styles = (theme) => ({
     position: 'fixed',
     zIndex: 1,
   },
+  submitButton: {
+    left: '15%',
+    bottom: 20,
+    position: 'fixed',
+    zIndex: 1,
+  },
   docViewer: {
     height: '200px',
     margin: '20px 0 20px 0',
+    overflow: 'auto',
   },
   timeSpend: {
     fontSize: '12px',
@@ -82,7 +89,6 @@ const styles = (theme) => ({
 });
 
 class AddCourse extends Component {
-  fileUrl: '';
   imageUrl: '';
   constructor(props) {
     super(props);
@@ -113,15 +119,29 @@ class AddCourse extends Component {
     fileInput.click();
   };
 
-  handleDocumentChange = (event) => {
-    this.fileUrl = URL.createObjectURL(event.target.files[0]);
-
-    this.setState({ doc: event.target.files[0] });
+  handleDocumentChange = (e) => {
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
+      this.setState({ doc: text });
+    };
+    reader.readAsText(e.target.files[0]);
   };
 
   handleDocumentUpload = () => {
     const fileInput = document.getElementById('document');
     fileInput.click();
+  };
+  clearForm = () => {
+    this.setState({
+      chapterNumber: '',
+      chapterDescription: '',
+      timeToBeSpend: '',
+      courseDetails: '',
+      image: null,
+      doc: null,
+    });
   };
   onFormSubmit = () => {
     const newChapter = {
@@ -130,10 +150,9 @@ class AddCourse extends Component {
       timeToBeSpend: this.state.timeToBeSpend,
       chapterDescription: this.state.chapterDescription,
       coverImage: this.state.image,
+      doc: this.state.doc,
     };
 
-    //problem
-    //if wee add a chapter the same chapter gets Add twice
     this.setState((prevState) => {
       const levels = [...prevState.levels];
       levels.find((level) => {
@@ -144,7 +163,6 @@ class AddCourse extends Component {
           if (level.chapters === undefined) {
             level.chapters = [];
           }
-
           level.chapters.push(newChapter);
         }
       });
@@ -153,6 +171,8 @@ class AddCourse extends Component {
 
   onInputChangeHandler = (event) =>
     this.setState({ [event.target.name]: event.target.value });
+
+  onDataSubmit = () => console.log(this.state.levels);
 
   render() {
     const { classes } = this.props;
@@ -168,10 +188,22 @@ class AddCourse extends Component {
                 variant="extended"
                 color="secondary"
                 className={classes.addLevelButton}
-                onClick={() => this.setState({ showLevelDialog: true })}
+                onClick={() =>
+                  this.setState({ showLevelDialog: true, levelName: '' })
+                }
               >
                 <AddIcon />
                 Add Level
+              </Fab>
+              <Fab
+                variant="extended"
+                color="secondary"
+                className={classes.submitButton}
+                onClick={this.onDataSubmit}
+              >
+                <SaveIcon />
+                {'  '}
+                Submit
               </Fab>
               <Dialog
                 open={this.state.showLevelDialog}
@@ -232,7 +264,7 @@ class AddCourse extends Component {
 
                       {level.chapters &&
                         level.chapters.map((chapter) => (
-                          <AccordionDetails>
+                          <AccordionDetails key={chapter.chapterNumber}>
                             <Accordion style={{ width: '100%' }}>
                               <AccordionSummary
                                 expandIcon={<ExpandMoreIcon />}
@@ -404,16 +436,12 @@ class AddCourse extends Component {
                     id="document"
                     onChange={this.handleDocumentChange}
                     hidden="hidden"
-                    accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    accept="text/plain"
                   />
 
                   {this.state.doc && (
                     <div className={classes.docViewer}>
-                      <FileViewer
-                        fileType={type}
-                        filePath={this.fileUrl}
-                        onError={this.onError}
-                      />
+                      <p>{this.state.doc}</p>
                     </div>
                   )}
                 </DialogContent>
@@ -427,6 +455,7 @@ class AddCourse extends Component {
                   <Button
                     onClick={() => {
                       this.onFormSubmit();
+                      this.clearForm();
                       this.setState({ showForm: false });
                     }}
                     color="primary"
