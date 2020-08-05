@@ -18,6 +18,8 @@ import ForgetPassword from './app/components/Auth/ForgetPassword';
 import AuthRoute from './app/utils/AuthRoute';
 import Dashboard from './app/components/Dashboard';
 import AddCourse from './app/components/AddCourse';
+import AddQuiz from './app/components/AddQuiz';
+import Levels from './app/components/Levels';
 const { persistor, store } = configureStore();
 
 const theme = createMuiTheme(themeFile);
@@ -36,6 +38,8 @@ function App() {
                   <Route path="/signup" component={SignUp} />
                   <Route path="/forget" component={ForgetPassword} />
                   <Route path="/add" component={AddCourse} />
+                  <Route path="/quiz" component={AddQuiz} />
+                  <Route path="/levels" component={Levels} />
                   <AuthRoute path="/" component={Dashboard} />
                 </Switch>
               </div>

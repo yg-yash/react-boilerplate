@@ -10,6 +10,7 @@ import BarChartIcon from '@material-ui/icons/BarChart';
 import LayersIcon from '@material-ui/icons/Layers';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import PostAddIcon from '@material-ui/icons/PostAdd';
+import QueueIcon from '@material-ui/icons/Queue';
 import { withRouter } from 'react-router-dom';
 
 class MainListItems extends Component {
@@ -29,11 +30,11 @@ class MainListItems extends Component {
           </ListItemIcon>
           <ListItemText primary="Add Course" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={() => history.push('/quiz')}>
           <ListItemIcon>
-            <ShoppingCartIcon />
+            <QueueIcon />
           </ListItemIcon>
-          <ListItemText primary="Orders" />
+          <ListItemText primary="Add Quiz" />
         </ListItem>
         <ListItem button>
           <ListItemIcon>
